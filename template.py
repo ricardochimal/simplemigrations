@@ -1,7 +1,7 @@
 migration_template = """
 from simplemigrations.migrations import BaseMigration, IrreversibleMigration
 
-class %(migration_name)s(BaseMigration):
+class Migration(BaseMigration):
 	def up(self):
 		# self.execute("SELECT 1")
 		# self.add_column("myproject", "mymodel", "column", "integer")
