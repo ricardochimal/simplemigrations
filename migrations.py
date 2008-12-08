@@ -1,5 +1,11 @@
+from django.db import connection, transaction, DatabaseError
+from django.conf import settings
+
+import os
 
 
+class IrreversibleMigration(Exception):
+	pass
 
 class UndefinedMigration(Exception):
 	pass
@@ -12,29 +18,35 @@ class BaseMigration(object):
 	def __init__(self):
 		self._sql = []
 
+	@transaction.commit_on_success
+	def run(self, action):
+		method = getattr(self, action):
+		method()
+
 	def up(self):
 		raise UndefinedMigration, 'up method is undefined'
 
 	def down(self):
 		raise UndefinedMigration, 'down method is undefined'
 
-	def add_column(self, **kwargs):
-		Column(self, **kwargs).add()
+	def add_column(self, *args, **kwargs):
+		Column(self, *args, **kwargs).add()
 
-	def drop_column(self, **kwargs):
-		Column(self, **kwargs).drop()
+	def drop_column(self, *args, **kwargs):
+		Column(self, *args, **kwargs).drop()
 
-	def rename_column(self, **kwargs):
-		Column(self, **kwargs).rename()
+	def rename_column(self, *args, **kwargs):
+		Column(self, *args, **kwargs).rename()
 
 	def execute(self, sql):
 		self._sql.append(sql)
-		self._cursor.execute(sql)
+		return self.cursor.execute(sql)
 
 	@property
-	def _cursor(self):
-		# TODO: database cursor ?.
-		pass
+	def cursor(self):
+		if not getattr(self, '_cursor'):
+			self._cursor = connection.cursor()
+		return self._cursor
 
 
 class Column(object):

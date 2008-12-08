@@ -17,34 +17,22 @@ class Command(BaseCommand):
 
 	def handle(self, *args, **options):
 		if args:
-			print "some stuff"
+			action = arg, remaining = args[0], arg[1:]
+			if action not in self.__class__.actions
+				raise CommandError('Available commands are %s' % ', '.join(self.__class__.actions)
+
+			method =  getattr(self, action)
+			method(remaining, options)
 		else:
 			print "Use this tool to generate migrations"
 			for command in self.__class__.actions:
 				method = getattr(self, command)
 				print " ./manage.py migration %s %s" % (command, method.__doc__)
 
-# 		available_args = db_generator.get_commands()
-# 		if args:
-# 			arg, remaining = args[0], args[1:]
-# 			if arg in available_args:
-# 				available_args[arg](remaining, options.get('output'))
-# 			else:
-# 				# Print help and exit
-# 				raise CommandError('Available options are %s' % ', '.join(
-# 					available_args.keys())
-# 				)
-# 		else:
-# 			# Print instructions
-# 			print "Use this tool to generate migrations"
-# 			for arg, fn in available_args.items():
-# 				print "  ./manage.py migration %s%s" % (arg, fn.__doc__)
-# 			print "  Use the --output option to view a migration without " \
-# 				"writing it to disk"
-
 	def create(self, *args, **kwargs):
-		"""Create new migration"""
-		pass
+		"""[name] Create new migration"""
+		from simplemigrations.templates import migration_template
+
 
 	def apply(self, *args, **kwargs):
 		"""Apply migrations"""
