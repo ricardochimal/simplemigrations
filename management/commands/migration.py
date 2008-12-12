@@ -17,12 +17,12 @@ class Command(BaseCommand):
 
 	def handle(self, *args, **options):
 		if args:
-			action = arg, remaining = args[0], arg[1:]
-			if action not in self.__class__.actions
-				raise CommandError('Available commands are %s' % ', '.join(self.__class__.actions)
+			action, remaining = args[0], args[1:]
+			if action not in self.__class__.actions:
+				raise CommandError('Available commands are %s' % ', '.join(self.__class__.actions))
 
-			method =  getattr(self, action)
-			method(remaining, options)
+			method = getattr(self, action)
+			method(*remaining, **options)
 		else:
 			print "Use this tool to generate migrations"
 			for command in self.__class__.actions:
@@ -31,7 +31,10 @@ class Command(BaseCommand):
 
 	def create(self, *args, **kwargs):
 		"""[name] Create new migration"""
-		from simplemigrations.templates import migration_template
+
+		from simplemigrations.actions import Migration
+		new_file = Migration().create(args[0])
+		print "Created new migration file: %s" % new_file
 
 
 	def apply(self, *args, **kwargs):
