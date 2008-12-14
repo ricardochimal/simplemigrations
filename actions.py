@@ -1,12 +1,13 @@
 from __future__ import with_statement
 
+from django.db import transaction
 from django.conf import settings
 
 import os
 import re
 
 slug_regex = re.compile('[^a-z0-9_]')
-migration_file_regex = re.compile('(\d+)_([a-z0-9_]+)\.py')
+migration_file_regex = re.compile('^(\d+)_([a-z0-9_]+)\.py$')
 
 class Migration(object):
 	def __init__(self):
@@ -33,15 +34,48 @@ class Migration(object):
 
 	def files(self):
 		return [f for f in os.listdir(settings.MIGRATION_DIRECTORY) \
-			if os.path.isfile(os.path.join(settings.MIGRATION_DIRECTORY, f))]
+			if os.path.isfile(os.path.join(settings.MIGRATION_DIRECTORY, f)) and migration_file_regex.match(f)]
 
 	def migration_files(self):
 		return [f for f in self.files() if migration_file_regex.match(f)]
 
+	def migration_files_with_version(self):
+		return [(f, int(migration_file_regex.match(f).groups()[0])) for f in self.migration_files()]
+
 	def max_migration(self):
-		nums = [int(migration_file_regex.match(f).groups()[0]) for f in self.migration_files()]
+		nums = [t[1] for t in self.migration_files_with_version()]
 		if len(nums):
 			return max(nums)
 		else:
 			return 0
+
+	def migrations_to_run(self):
+		from simplemigrations.models import AppliedMigration
+		latest_version = AppliedMigration.latest_version()
+		return sorted([t for t in self.migration_files_with_version() if t[1] > latest_version], key=lambda x: x[1])
+
+	def load_migration_model(self, file_path):
+		import imp
+		dir_name, file_name = os.path.split(file_path)
+		mod_name = file_name.replace('.py', '')
+		dot_py_suffix = ('.py', 'U', 1)
+		mod = imp.load_module(mod_name, open(file_path), file_path, dot_py_suffix)
+		return mod#.Migration
+
+	@transaction.commit_manually
+	def run(self):
+		from simplemigrations.models import AppliedMigration
+
+		for t in  self.migrations_to_run():
+			file_name, version = t
+			file_path = os.path.join(settings.MIGRATION_DIRECTORY, file_name)
+			klass = self.load_migration_model(file_path)
+			m = klass.Migration()
+
+			m.run(action='up')
+			AppliedMigration.objects.create(filename=file_name, version=version)
+			transaction.commit()
+
+	def redo(self):
+		pass
 

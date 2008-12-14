@@ -1,4 +1,4 @@
-from django.db import connection, transaction, DatabaseError
+from django.db import connection, DatabaseError
 from django.conf import settings
 
 import os
@@ -18,9 +18,8 @@ class BaseMigration(object):
 	def __init__(self):
 		self._sql = []
 
-	@transaction.commit_on_success
 	def run(self, action):
-		method = getattr(self, action):
+		method = getattr(self, action)
 		method()
 
 	def up(self):
@@ -38,13 +37,14 @@ class BaseMigration(object):
 	def rename_column(self, *args, **kwargs):
 		Column(self, *args, **kwargs).rename()
 
-	def execute(self, sql):
-		self._sql.append(sql)
-		return self.cursor.execute(sql)
+	def execute(self, sql, params=None):
+		if not params:
+			params = []
+		self._sql.append((sql, params))
+		return self.cursor().execute(sql, params)
 
-	@property
 	def cursor(self):
-		if not getattr(self, '_cursor'):
+		if not hasattr(self, '_cursor'):
 			self._cursor = connection.cursor()
 		return self._cursor
 

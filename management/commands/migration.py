@@ -13,7 +13,7 @@ class Command(BaseCommand):
 	help = "Generate a new migration"
 	requires_model_validation = True
 
-	actions = ['create', 'apply']
+	actions = ['create', 'run', 'redo']
 
 	def handle(self, *args, **options):
 		if args:
@@ -36,8 +36,13 @@ class Command(BaseCommand):
 		new_file = Migration().create(args[0])
 		print "Created new migration file: %s" % new_file
 
+	def run(self, *args, **kwargs):
+		"""Run migrations"""
+		from simplemigrations.actions import Migration
+		Migration().run()
 
-	def apply(self, *args, **kwargs):
-		"""Apply migrations"""
-		pass
+	def redo(self, *args, **kwargs):
+		"""Redo last migration"""
+		from simplemigrations.actions import Migration
+		Migration().redo()
 
