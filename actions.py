@@ -108,3 +108,14 @@ class Migration(object):
 
 		transaction.commit()
 
+	def undo(self):
+		from simplemigrations.models import AppliedMigration
+
+		am = AppliedMigration.latest()
+		version = am.version
+		file_name = self.migration_file(version)
+		file_path = os.path.join(settings.MIGRATION_DIRECTORY, file_name)
+		klass = self.load_migration_model(file_path)
+
+		self.migrate_down(klass, am)
+

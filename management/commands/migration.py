@@ -13,7 +13,7 @@ class Command(BaseCommand):
 	help = "Generate a new migration"
 	requires_model_validation = True
 
-	actions = ['create', 'run', 'redo']
+	actions = ['create', 'run', 'redo', 'undo']
 
 	def handle(self, *args, **options):
 		if args:
@@ -45,4 +45,9 @@ class Command(BaseCommand):
 		"""Redo last migration"""
 		from simplemigrations.actions import Migration
 		Migration().redo()
+
+	def undo(self, *args, **kwargs):
+		"""Undo last migration"""
+		from simplemigrations.actions import Migration
+		Migration().undo()
 
