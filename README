@@ -1,0 +1,60 @@
+===============================================================================
+Simple Migrations v1.0
+===============================================================================
+
+"Simple Migrations" ideally should keep the migration process simple and not
+try to do too many things for you. I don't think that it's too much to ask that
+you know how to write SQL or be able to do data manipulation. I try to use
+as much of Django's builtins as possible to avoid any issues across databases
+but just to be clear my main purpose right now is to get it to work with 
+PostgreSQL, any compatibility with other databases at this point is purely
+coincidental.
+
+-- Ricardo Chimal, Jr.
+
+
+===============================================================================
+Install
+===============================================================================
+
+1) Copy the simplemigrations directory in to your python path.
+In Debian this is in /usr/lib/python2.5/site-packages/simplemigrations.
+
+I'll eventually get around to making using setuptools or something else to
+make this bit easier.
+
+2) Add 'simplemigrations' to your INSTALLED_APPS in your Django project's 
+settings.py file.
+
+3) Create a directory in your Django project and set MIGRATION_DIRECTORY to it
+in your settings.py file.
+
+i.e. MIGRATION_DIRECTORY = '/myproject/schemachanges'
+
+4) Create the database table for simplemigrations.  You can do this by just
+running:
+
+	./manage.py syncdb
+	
+or manually creating the table schema generated from:
+
+	./manage.py sqlall simplemigrations
+
+
+===============================================================================
+Usage
+===============================================================================
+
+You can see the list of commands available by running:
+
+	./manage.py migration
+
+
+Currently the list of commands are:
+
+	./manage.py migration create [name] # Create new migration
+	./manage.py migration run           # Run migrations
+	./manage.py migration redo          # Redo last migration
+	./manage.py migration undo          # Undo last migration
+
+
