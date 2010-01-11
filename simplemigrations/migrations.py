@@ -63,7 +63,7 @@ class Column(object):
 		return u"%s_%s" % (self.app, self.model)
 
 	def add(self):
-		if not self.field:
+		if not self.field_type:
 			raise InvalidMigration, 'Adding %s requires field_type' % self.column
 
 		sql = 'ALTER TABLE %(table)s ADD COLUMN %(column)s %(field_type)s' % {
