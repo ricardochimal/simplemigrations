@@ -48,6 +48,11 @@ class BaseMigration(object):
 			self._cursor = connection.cursor()
 		return self._cursor
 
+	def select_all(self, sql, params=None):
+		c = self.cursor()
+		c.execute(sql, params)
+		return c.fetchall()
+
 
 class Column(object):
 	def __init__(self, migration, app, model, column, field_type=None, rename_to_column=None):
